@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "678173951817",
+    "firebase_url": "https://test-f45b6.firebaseio.com",
+    "project_id": "test-f45b6",
+    "storage_bucket": "test-f45b6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:678173951817:android:69c3acb4724229fa",
+        "android_client_info": {
+          "package_name": "com.example.ryota.kotlinapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "678173951817-im8g1ne1vjnqie9qm8hrrdtjhes56c9t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYRB5ToIUOF0PHNsoGHPLox4F738GYxnI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
