@@ -5,10 +5,7 @@ import com.example.ryota.kotlinapp.model.alarm.Alarm
 import com.example.ryota.kotlinapp.model.alarm.JoinedUser
 import com.example.ryota.kotlinapp.model.user.User
 import com.example.ryota.kotlinapp.repository.AlarmRepository
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import org.jetbrains.anko.doAsyncResult
 import java.security.InvalidParameterException
 import java.util.*
@@ -56,7 +53,7 @@ class AlarmGateway : AlarmRepository {
         lateinit var title: String
         var vibration: Int? = null
         lateinit var musicURL: String
-        var joinedUsers: Map<String, JoinedUser> = emptyMap<String, JoinedUser>()
+        var joinedUsers: Map<String, JoinedUserDto>? = null
         fun Map<String, JoinedUser>.toList() = this.values.toList()
 
         override fun toString(): String = "$id, $title, $duration, $userId, $vibration, $musicURL, $joinedUsers"
@@ -81,19 +78,42 @@ class AlarmGateway : AlarmRepository {
     }
 
     fun alarmDto2Model(dto: AlarmDto): Alarm = with(dto) {
-        val vib = vibration?: throw InvalidParameterException()
+        val vib = vibration ?: throw InvalidParameterException()
+        val date = time?.let { it * 1000 }
         try {
-            return@with Alarm(Alarm.ID(id), Date(time ?: throw InvalidParameterException()),
+            return@with Alarm(Alarm.ID(id), Date(date ?: throw InvalidParameterException()),
                     User.ID(userId), duration ?: throw InvalidParameterException(),
-                    Alarm.Title(title), Alarm.Vibration.fromBool(vib == 1), musicURL, Alarm.JoinedUsers())
+                    Alarm.Title(title), Alarm.Vibration.fromBool(vib == 1), musicURL,
+                    Alarm.JoinedUsers(dto.joinedUsers?.values?.toList()?.map(this@AlarmGateway::joinedUserDto2Model) ?: emptyList()))
         } catch(err: Throwable) {
             throw InvalidParameterException(dto.toString())
         }
     }
 
 
-    override fun getOneById(id: Alarm.ID): Future<Alarm> {
-        return doAsyncResult { Alarm.empty }
+    override fun getOneById(id: Alarm.ID, onSuccess: (Alarm) -> Unit, onError: (Error) -> Unit): Unit {
+        return onError(Error("no impl"))
+    }
+
+    override fun subscribeOne(userId: User.ID, id: Alarm.ID, onSuccess: (Alarm) -> Unit, onError: (Error) -> Unit): () -> Unit {
+        val ref = FirebaseDatabase.getInstance().getReference("/alarm/${userId.value}/${id.value}")
+        val listener = object : ValueEventListener {
+            override fun onCancelled(error: DatabaseError?) {
+                onError(Error(error?.message))
+            }
+
+            override fun onDataChange(db: DataSnapshot?) {
+                db?.let {
+                    if (it.value != null) {
+                        onSuccess(alarmDto2Model(it.getValue(AlarmDto::class.java)))
+                    }
+                }
+            }
+        }
+
+        ref.addValueEventListener(listener)
+
+        return { ref.removeEventListener(listener) }
     }
 
 
@@ -121,8 +141,6 @@ class AlarmGateway : AlarmRepository {
     }
 
     override fun getListByUserId(id: User.ID, onSuccess: (List<Alarm>) -> Unit, onError: (Error) -> Unit) {
-        Log.d("share_alarm", id.value)
-
         val ref = FirebaseDatabase.getInstance().getReference("/user/${id.value}/alarms")
         ref.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(error: DatabaseError?) {

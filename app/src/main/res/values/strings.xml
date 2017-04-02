@@ -15,4 +15,8 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+    <string name="time">time</string>
+    <string name="title">title</string>
+    <string name="subscribingQuestion">お休みになる</string>
+    <string name="alarmCreatorName">作成者</string>
 </resources>

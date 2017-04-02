@@ -7,7 +7,6 @@ import com.example.ryota.kotlinapp.Activities.LoginActivity
 import com.example.ryota.kotlinapp.gateway.UserGateway
 import com.example.ryota.kotlinapp.model.user.User
 import com.example.ryota.kotlinapp.service.user.SignInUser
-import com.example.ryota.kotlinapp.service.user.SingInArguments
 import com.google.firebase.auth.FirebaseAuth
 import org.jetbrains.anko.*
 
@@ -49,7 +48,7 @@ class LoginUi(var onReceiveUser: (User) -> Unit) : AnkoComponent<LoginActivity> 
     }
 
     fun signIn(username: String, password: String) {
-        SignInUser.instance().execute(SingInArguments(username, password), {
+        SignInUser.instance().execute(SignInUser.Args(username, password), {
             onReceiveUser(it)
         }, {
             errorText.text = it.message
